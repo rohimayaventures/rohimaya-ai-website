@@ -1,0 +1,178 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Build
+        run: pnpm build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nextjs-build
+          path: .next/
+
+  # ============================================
+  # OPTION 1: VERCEL DEPLOYMENT (RECOMMENDED)
+  # ============================================
+  # Uncomment this job to deploy to Vercel
+  # Prerequisites:
+  # 1. Install Vercel CLI: pnpm add -D vercel
+  # 2. Add GitHub secrets: VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID
+  # 3. Run `vercel link` locally to get org/project IDs
+
+  # deploy-vercel:
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main'
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Setup pnpm
+  #       uses: pnpm/action-setup@v2
+  #       with:
+  #         version: 8
+  #
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '20'
+  #         cache: 'pnpm'
+  #
+  #     - name: Install dependencies
+  #       run: pnpm install --frozen-lockfile
+  #
+  #     - name: Deploy to Vercel
+  #       run: |
+  #         pnpm vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
+  #       env:
+  #         VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  #         VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+  # ============================================
+  # OPTION 2: AZURE STATIC WEB APPS
+  # ============================================
+  # Uncomment this job to deploy to Azure Static Web Apps
+  # Prerequisites:
+  # 1. Create Azure Static Web App resource
+  # 2. Add GitHub secret: AZURE_STATIC_WEB_APPS_API_TOKEN
+  # 3. Configure next.config.mjs with `output: 'export'` for static export
+
+  # deploy-azure:
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main'
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #       with:
+  #         submodules: true
+  #
+  #     - name: Setup pnpm
+  #       uses: pnpm/action-setup@v2
+  #       with:
+  #         version: 8
+  #
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '20'
+  #         cache: 'pnpm'
+  #
+  #     - name: Install dependencies
+  #       run: pnpm install --frozen-lockfile
+  #
+  #     - name: Build (Static Export)
+  #       run: pnpm build
+  #
+  #     - name: Deploy to Azure Static Web Apps
+  #       uses: Azure/static-web-apps-deploy@v1
+  #       with:
+  #         azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+  #         repo_token: ${{ secrets.GITHUB_TOKEN }}
+  #         action: 'upload'
+  #         app_location: '/'
+  #         api_location: ''
+  #         output_location: 'out'
+
+  # ============================================
+  # OPTION 3: GITHUB PAGES (FALLBACK)
+  # ============================================
+  # Uncomment this job to deploy to GitHub Pages
+  # Prerequisites:
+  # 1. Enable GitHub Pages in repo settings (Source: GitHub Actions)
+  # 2. Configure next.config.mjs with `output: 'export'` and `basePath` if needed
+  # 3. Update package.json build script if custom domain required
+
+  # deploy-github-pages:
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main'
+  #   permissions:
+  #     contents: read
+  #     pages: write
+  #     id-token: write
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Setup pnpm
+  #       uses: pnpm/action-setup@v2
+  #       with:
+  #         version: 8
+  #
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '20'
+  #         cache: 'pnpm'
+  #
+  #     - name: Install dependencies
+  #       run: pnpm install --frozen-lockfile
+  #
+  #     - name: Build (Static Export)
+  #       run: pnpm build
+  #
+  #     - name: Setup Pages
+  #       uses: actions/configure-pages@v4
+  #
+  #     - name: Upload artifact
+  #       uses: actions/upload-pages-artifact@v3
+  #       with:
+  #         path: './out'
+  #
+  #     - name: Deploy to GitHub Pages
+  #       id: deployment
+  #       uses: actions/deploy-pages@v4

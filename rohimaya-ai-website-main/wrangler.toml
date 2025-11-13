@@ -1,0 +1,18 @@
+name = "rohimaya-ai-website"
+compatibility_date = "2025-11-12"
+pages_build_output_dir = ".vercel/output/static"
+compatibility_flags = ["nodejs_compat"]
+
+# Cloudflare Pages configuration
+[env.production]
+# Your custom domain will be configured in the Cloudflare Dashboard
+# under Pages > rohimaya-ai-website > Custom domains
+# Add: rohimaya.ai and www.rohimaya.ai
+
+# Environment variables (if needed)
+# [env.production.vars]
+# NEXT_PUBLIC_API_URL = "https://api.rohimaya.ai"
+
+# Preview environment
+[env.preview]
+# Automatic preview deployments for pull requests
